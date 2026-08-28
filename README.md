@@ -45,6 +45,21 @@ wherever you deploy.
 - `/clear` — clear your local screen (does not affect other clients)
 - `/help` — show the command list
 
+## Desktop / folders
+
+After joining, the main screen is a desktop of folders with the chat as a
+medium-sized box on the right:
+
+- **PHOTOS** — opens a gallery overlay with a placeholder image grid and lore
+  text. To show real photos, drop files named `img1.jpg` through `img6.jpg`
+  into `public/images/` — the grid loads whatever's present and falls back to
+  a "NO IMAGE" placeholder tile for any file that's missing, no code changes
+  needed. Replace the placeholder lore paragraph directly in
+  `public/index.html` (search for `LORE FILE // ENTRY 001`).
+- **SECRET** folders — decorative and locked. Clicking one just shakes the
+  icon and shows "ACCESS DENIED"; there's no real content or password gate
+  behind them.
+
 ## Deploying to Render (free tier)
 
 1. Push this repo to GitHub (public or private).

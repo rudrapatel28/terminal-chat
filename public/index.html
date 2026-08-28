@@ -262,11 +262,101 @@
     min-height: 0;
   }
 
+  /* ---------- Desktop (folder area) ---------- */
+  #desktop {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 34px;
+  }
+  .folder {
+    width: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    outline: none;
+  }
+  .folder-icon {
+    color: var(--green);
+    filter: drop-shadow(0 0 4px rgba(61,255,119,0.4));
+    transition: transform 0.12s ease;
+  }
+  .folder:hover .folder-icon,
+  .folder:focus-visible .folder-icon {
+    transform: translateY(-2px);
+  }
+  .folder-label {
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--green-dim);
+  }
+  .folder.locked .folder-icon { color: var(--green-dimmer); }
+  .folder.locked .folder-label { color: var(--amber); }
+  .lock-badge {
+    position: absolute;
+    top: -2px;
+    right: 14px;
+    color: var(--amber);
+    background: var(--bg);
+    border-radius: 3px;
+  }
+  .folder.shake { animation: folder-shake 0.4s ease; }
+  @keyframes folder-shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-5px); }
+    40%, 60% { transform: translateX(5px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .folder.shake { animation: none; }
+  }
+  #desktop-toast {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 6px 16px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+  }
+  #desktop-toast.visible { opacity: 1; }
+
+  /* ---------- Chat panel (medium box, right side) ---------- */
+  #chat-panel {
+    width: 380px;
+    max-width: 42vw;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-left: 1px solid var(--border);
+    background: var(--bg-raised);
+    min-height: 0;
+  }
+
   #log-pane {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-width: 0;
+    min-height: 0;
   }
 
   #log {
@@ -289,7 +379,18 @@
     background: var(--bg-raised);
     padding: 10px 12px;
     overflow-y: auto;
-    flex-shrink: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    z-index: 20;
+    box-shadow: -6px 0 18px rgba(0,0,0,0.5);
+  }
+  #sidebar.open { transform: translateX(0); }
+  @media (prefers-reduced-motion: reduce) {
+    #sidebar { transition: none; }
   }
   #sidebar h2 {
     font-size: 11px;
@@ -323,29 +424,104 @@
   }
   #char-count { color: var(--green-dimmer); font-size: 11px; white-space: nowrap; }
 
-  /* Mobile: sidebar becomes an overlay panel toggled by tapping online count */
+  /* ---------- Gallery overlay (PHOTOS folder) ---------- */
+  #gallery-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    background: rgba(0,0,0,0.75);
+    padding: 20px;
+  }
+  #gallery-overlay.visible { display: flex; }
+  .gallery-box {
+    width: 100%;
+    max-width: 820px;
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    box-shadow: 0 0 30px rgba(61,255,119,0.1);
+  }
+  .gallery-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  #gallery-close { cursor: pointer; color: var(--green-dim); }
+  #gallery-close:hover { color: var(--green); }
+  .gallery-body {
+    display: flex;
+    gap: 18px;
+    padding: 18px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  #gallery-grid {
+    flex: 1.2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    align-content: start;
+  }
+  .gallery-tile {
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--green-dimmer);
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .gallery-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gallery-tile .placeholder-mark {
+    color: var(--green-dimmer);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+  .gallery-lore {
+    flex: 1;
+    border-left: 1px solid var(--border);
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--green-dim);
+  }
+  .gallery-lore h3 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    font-weight: normal;
+  }
+  .gallery-lore p { margin: 0 0 10px; }
+  .gallery-lore code { color: var(--green); }
+
+  /* ---------- Responsive: stack desktop above chat on narrow screens ---------- */
   @media (max-width: 720px) {
-    #sidebar {
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      transform: translateX(100%);
-      transition: transform 0.2s ease;
-      z-index: 20;
-      box-shadow: -6px 0 18px rgba(0,0,0,0.5);
-    }
-    #sidebar.open { transform: translateX(0); }
-    @media (prefers-reduced-motion: reduce) {
-      #sidebar { transition: none; }
-    }
+    #main { flex-direction: column; }
+    #chat-panel { width: 100%; max-width: none; height: 45%; border-left: none; border-top: 1px solid var(--border); }
+    #desktop { flex: 1; }
+    .gallery-body { flex-direction: column; }
+    #gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-lore { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 14px; }
   }
 
   .hidden { display: none !important; }
 
-  #log::-webkit-scrollbar, #sidebar::-webkit-scrollbar { width: 8px; }
-  #log::-webkit-scrollbar-thumb, #sidebar::-webkit-scrollbar-thumb { background: var(--green-dimmer); }
-  #log::-webkit-scrollbar-track, #sidebar::-webkit-scrollbar-track { background: var(--bg); }
+  #log::-webkit-scrollbar, #sidebar::-webkit-scrollbar, #desktop::-webkit-scrollbar, .gallery-body::-webkit-scrollbar { width: 8px; }
+  #log::-webkit-scrollbar-thumb, #sidebar::-webkit-scrollbar-thumb, #desktop::-webkit-scrollbar-thumb, .gallery-body::-webkit-scrollbar-thumb { background: var(--green-dimmer); }
+  #log::-webkit-scrollbar-track, #sidebar::-webkit-scrollbar-track, #desktop::-webkit-scrollbar-track, .gallery-body::-webkit-scrollbar-track { background: var(--bg); }
 </style>
 </head>
 <body>
@@ -389,17 +565,78 @@
       </div>
     </div>
     <div id="main">
-      <div id="log-pane">
-        <div id="log"></div>
-        <div id="input-row">
-          <span id="prompt-label"></span>
-          <input id="msg-input" type="text" maxlength="300" autocomplete="off" spellcheck="false">
-          <span id="char-count">300</span>
+      <div id="desktop">
+        <div class="folder" id="folder-photos" tabindex="0" role="button" aria-label="Open PHOTOS folder">
+          <svg class="folder-icon" viewBox="0 0 24 20" width="56" height="46" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M1 4h7l2 2h13v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4z"/>
+          </svg>
+          <div class="folder-label">PHOTOS</div>
+        </div>
+        <div class="folder locked" tabindex="0" role="button" aria-label="Locked folder SECRET">
+          <svg class="folder-icon" viewBox="0 0 24 20" width="56" height="46" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M1 4h7l2 2h13v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4z"/>
+          </svg>
+          <svg class="lock-badge" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="11" width="14" height="9" rx="1.5"/>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          </svg>
+          <div class="folder-label">SECRET</div>
+        </div>
+        <div class="folder locked" tabindex="0" role="button" aria-label="Locked folder SECRET">
+          <svg class="folder-icon" viewBox="0 0 24 20" width="56" height="46" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M1 4h7l2 2h13v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4z"/>
+          </svg>
+          <svg class="lock-badge" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="11" width="14" height="9" rx="1.5"/>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          </svg>
+          <div class="folder-label">SECRET</div>
+        </div>
+        <div class="folder locked" tabindex="0" role="button" aria-label="Locked folder SECRET">
+          <svg class="folder-icon" viewBox="0 0 24 20" width="56" height="46" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M1 4h7l2 2h13v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4z"/>
+          </svg>
+          <svg class="lock-badge" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="11" width="14" height="9" rx="1.5"/>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          </svg>
+          <div class="folder-label">SECRET</div>
+        </div>
+        <div id="desktop-toast"></div>
+      </div>
+      <div id="chat-panel">
+        <div id="log-pane">
+          <div id="log"></div>
+          <div id="input-row">
+            <span id="prompt-label"></span>
+            <input id="msg-input" type="text" maxlength="300" autocomplete="off" spellcheck="false">
+            <span id="char-count">300</span>
+          </div>
+        </div>
+        <div id="sidebar">
+          <h2>online (<span id="sidebar-count">0</span>)</h2>
+          <ul id="user-list"></ul>
         </div>
       </div>
-      <div id="sidebar">
-        <h2>online (<span id="sidebar-count">0</span>)</h2>
-        <ul id="user-list"></ul>
+    </div>
+  </div>
+
+  <div id="gallery-overlay">
+    <div class="gallery-box">
+      <div class="gallery-titlebar">
+        <span>PHOTOS</span>
+        <span id="gallery-close" tabindex="0" role="button" aria-label="Close">close &gt;&gt;</span>
+      </div>
+      <div class="gallery-body">
+        <div id="gallery-grid"></div>
+        <div class="gallery-lore">
+          <h3>LORE FILE // ENTRY 001</h3>
+          <p>Placeholder entry. Nothing here has been verified. The archive
+          keeps whatever gets dropped into it, in whatever order it arrives,
+          and makes no promises about any of it.</p>
+          <p>This text is filler until real lore is written. Replace it in
+          <code>public/index.html</code> whenever it's ready.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -744,6 +981,93 @@
 
   onlineCountBtn.addEventListener('click', function () {
     sidebar.classList.toggle('open');
+  });
+
+  // ---------------- Desktop folders ----------------
+  var desktopToast = document.getElementById('desktop-toast');
+  var toastTimer = null;
+
+  function showToast(text) {
+    desktopToast.textContent = text;
+    desktopToast.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      desktopToast.classList.remove('visible');
+    }, 1500);
+  }
+
+  document.querySelectorAll('.folder.locked').forEach(function (folder) {
+    function triggerLocked() {
+      folder.classList.remove('shake');
+      // eslint-disable-next-line no-unused-expressions
+      folder.offsetWidth; // restart animation
+      folder.classList.add('shake');
+      showToast('ACCESS DENIED');
+    }
+    folder.addEventListener('click', triggerLocked);
+    folder.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerLocked(); }
+    });
+  });
+
+  // ---------------- Gallery overlay (PHOTOS folder) ----------------
+  var folderPhotos = document.getElementById('folder-photos');
+  var galleryOverlay = document.getElementById('gallery-overlay');
+  var galleryClose = document.getElementById('gallery-close');
+  var galleryGrid = document.getElementById('gallery-grid');
+
+  var GALLERY_IMAGES = [
+    'images/img1.jpg', 'images/img2.jpg', 'images/img3.jpg',
+    'images/img4.jpg', 'images/img5.jpg', 'images/img6.jpg'
+  ];
+
+  function buildGallery() {
+    galleryGrid.innerHTML = '';
+    GALLERY_IMAGES.forEach(function (src, i) {
+      var tile = document.createElement('div');
+      tile.className = 'gallery-tile';
+      var mark = document.createElement('div');
+      mark.className = 'placeholder-mark';
+      mark.textContent = 'NO IMAGE\n#' + (i + 1);
+      mark.style.whiteSpace = 'pre-line';
+      tile.appendChild(mark);
+
+      var img = document.createElement('img');
+      img.alt = 'photo ' + (i + 1);
+      img.addEventListener('error', function () {
+        img.style.display = 'none';
+      });
+      img.addEventListener('load', function () {
+        mark.style.display = 'none';
+      });
+      img.src = src;
+      tile.appendChild(img);
+      galleryGrid.appendChild(tile);
+    });
+  }
+
+  function openGallery() {
+    buildGallery();
+    galleryOverlay.classList.add('visible');
+  }
+
+  function closeGallery() {
+    galleryOverlay.classList.remove('visible');
+  }
+
+  folderPhotos.addEventListener('click', openGallery);
+  folderPhotos.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGallery(); }
+  });
+  galleryClose.addEventListener('click', closeGallery);
+  galleryClose.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeGallery(); }
+  });
+  galleryOverlay.addEventListener('click', function (e) {
+    if (e.target === galleryOverlay) closeGallery();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && galleryOverlay.classList.contains('visible')) closeGallery();
   });
 
   function connect(handle) {
