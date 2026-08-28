@@ -1,0 +1,16 @@
+{
+  "name": "terminal-chat",
+  "version": "1.0.0",
+  "description": "Self-hosted terminal-style web chat room. No accounts, no database.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "license": "MIT"
+}
