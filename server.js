@@ -6,6 +6,7 @@ const path = require('path');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 3000;
+const ACCESS_CODE = process.env.ACCESS_CODE || '';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 const HISTORY_LIMIT = 200;
@@ -133,6 +134,13 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'join') {
       if (ws.state.handle) return; // already joined
+      if (ACCESS_CODE) {
+        const code = typeof msg.code === 'string' ? msg.code : '';
+        if (code !== ACCESS_CODE) {
+          sendTo(ws, { type: 'error', text: 'Invalid access code.' });
+          return;
+        }
+      }
       const handle = typeof msg.handle === 'string' ? msg.handle.trim() : '';
       if (!HANDLE_RE.test(handle)) {
         sendTo(ws, { type: 'error', text: 'Invalid handle: 1-16 chars, letters/numbers/_.- only.' });

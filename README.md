@@ -23,6 +23,20 @@ yourself.
 
 The port comes from `process.env.PORT`, falling back to `3000`.
 
+### Access code (optional)
+
+Set the `ACCESS_CODE` environment variable to require a shared code before
+anyone can join:
+
+```bash
+ACCESS_CODE=letmein npm start
+```
+
+If `ACCESS_CODE` is unset (the default), the code field is ignored and anyone
+can join with just a handle. The code is never written into the source code,
+so it stays out of the public GitHub repo — set it as an environment variable
+wherever you deploy.
+
 ## Client commands
 
 - `/me <action>` — describe an action (e.g. `/me waves`)
@@ -48,6 +62,10 @@ Render assigns a URL like `https://<your-service-name>.onrender.com`. The app
 auto-detects `https://` and switches to a `wss://` WebSocket connection, so no
 extra config is needed.
 
+To require an access code in production, add an environment variable in the
+Render dashboard under your service → **Environment**: key `ACCESS_CODE`,
+value whatever shared code you want. Redeploy for it to take effect.
+
 **To redeploy after changes:** commit and push to the branch Render is watching
 (usually `main`) — Render auto-deploys on push. Or click **Manual Deploy** →
 **Deploy latest commit** in the Render dashboard.
@@ -60,6 +78,15 @@ and the WebSocket to connect. Once it's warm, everyone else connects instantly.
 The server's ping/pong keepalive (every 30s) only keeps the process from idling
 *while people are connected* — it does not prevent the free-tier sleep when the
 room is empty.
+
+**Keeping it warm:** point an external uptime pinger (e.g.
+[cron-job.org](https://cron-job.org), [UptimeRobot](https://uptimerobot.com))
+at your root URL (`https://<your-service-name>.onrender.com/`) on a schedule
+under 15 minutes (10 minutes leaves a safe margin). A plain `GET /` is enough —
+it doesn't need to open a WebSocket. Note this uses up your Render free-tier
+monthly instance-hours faster since the service never sleeps; fine for a
+single always-on service, but leaves less headroom if you run other free
+services on the same account.
 
 ## Notes
 

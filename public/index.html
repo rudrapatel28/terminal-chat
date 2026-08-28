@@ -149,6 +149,7 @@
     background: #000;
   }
   .gate-row span { color: var(--green-dim); white-space: nowrap; }
+  .gate-row + .gate-row { margin-top: 8px; }
   #handle-input {
     flex: 1;
     background: transparent;
@@ -361,6 +362,10 @@
     <div class="gate-box">
       <h1>&gt; enter a handle to join the relay</h1>
       <div class="gate-row">
+        <span>code:</span>
+        <input id="code-input" type="password" autocomplete="off" spellcheck="false" placeholder="access code">
+      </div>
+      <div class="gate-row">
         <span>handle:</span>
         <input id="handle-input" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="e.g. ghost_01">
       </div>
@@ -429,7 +434,7 @@
     bootDone = true;
     bootScreen.classList.add('hidden');
     gateScreen.classList.add('visible');
-    document.getElementById('handle-input').focus();
+    document.getElementById('code-input').focus();
   }
 
   function runBoot() {
@@ -461,11 +466,13 @@
 
   // ---------------- Handle gate ----------------
   var handleInput = document.getElementById('handle-input');
+  var codeInput = document.getElementById('code-input');
   var gateHint = document.getElementById('gate-hint');
   var gateSubmit = document.getElementById('gate-submit');
   var appEl = document.getElementById('app');
 
   var myHandle = null;
+  var myAccessCode = '';
   var socket = null;
 
   // ---------------- One-time intro video ----------------
@@ -529,6 +536,7 @@
     gateHint.classList.remove('error');
     gateHint.textContent = 'connecting...';
     myHandle = val;
+    myAccessCode = codeInput.value;
 
     var seenIntro = false;
     try { seenIntro = !!localStorage.getItem(INTRO_KEY); } catch (e) {}
@@ -540,6 +548,9 @@
   gateSubmit.addEventListener('click', attemptJoin);
   handleInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') attemptJoin();
+  });
+  codeInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') handleInput.focus();
   });
 
   // ---------------- Chat app state ----------------
@@ -740,7 +751,7 @@
     socket = new WebSocket(wsUrl());
 
     socket.addEventListener('open', function () {
-      sendJSON({ type: 'join', handle: handle });
+      sendJSON({ type: 'join', handle: handle, code: myAccessCode });
     });
 
     socket.addEventListener('message', function (ev) {
