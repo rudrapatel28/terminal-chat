@@ -176,6 +176,41 @@
   }
   .gate-submit:hover { background: rgba(61,255,119,0.08); }
 
+  /* ---------- Intro video screen ---------- */
+  #video-screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 11;
+    background: #000;
+    padding: 20px;
+  }
+  #video-screen.visible { display: flex; }
+  .video-box {
+    width: 100%;
+    max-width: 800px;
+    border: 1px solid var(--border);
+    background: #000;
+    box-shadow: 0 0 24px rgba(61,255,119,0.08);
+  }
+  #intro-video {
+    display: block;
+    width: 100%;
+    max-height: 70vh;
+    background: #000;
+  }
+  #video-skip {
+    text-align: right;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--green-dim);
+    cursor: pointer;
+    border-top: 1px solid var(--border);
+  }
+  #video-skip:hover { color: var(--green); }
+
   /* ---------- App screen ---------- */
   #app {
     position: absolute;
@@ -334,6 +369,13 @@
     </div>
   </div>
 
+  <div id="video-screen">
+    <div class="video-box">
+      <video id="intro-video" src="intro.mp4" playsinline></video>
+      <div id="video-skip">skip &gt;&gt;</div>
+    </div>
+  </div>
+
   <div id="app">
     <div id="header">
       <div class="brand"><span class="status-dot" id="status-dot"></span><span id="status-text">connecting...</span></div>
@@ -426,6 +468,57 @@
   var myHandle = null;
   var socket = null;
 
+  // ---------------- One-time intro video ----------------
+  var INTRO_KEY = 'relay_intro_seen_v1';
+  var videoScreen = document.getElementById('video-screen');
+  var introVideo = document.getElementById('intro-video');
+  var videoSkip = document.getElementById('video-skip');
+  var introActive = false;
+  var joinReady = false; // true once the server has confirmed 'joined' while intro is still playing
+
+  function showApp() {
+    promptLabel.textContent = myHandle + '@relay:~$';
+    gateScreen.classList.remove('visible');
+    videoScreen.classList.remove('visible');
+    appEl.classList.add('visible');
+    setStatus('online');
+    msgInput.focus();
+  }
+
+  function finishIntro() {
+    if (!introActive) return;
+    introActive = false;
+    try { localStorage.setItem(INTRO_KEY, '1'); } catch (e) {}
+    introVideo.pause();
+    videoScreen.classList.remove('visible');
+    if (joinReady) {
+      showApp();
+    } else {
+      gateScreen.classList.add('visible');
+      gateHint.textContent = 'connecting...';
+    }
+  }
+
+  function abortIntro() {
+    introActive = false;
+    introVideo.pause();
+    videoScreen.classList.remove('visible');
+  }
+
+  function playIntro() {
+    introActive = true;
+    joinReady = false;
+    gateScreen.classList.remove('visible');
+    videoScreen.classList.add('visible');
+    introVideo.currentTime = 0;
+    var p = introVideo.play();
+    if (p && typeof p.catch === 'function') p.catch(finishIntro);
+  }
+
+  introVideo.addEventListener('ended', finishIntro);
+  introVideo.addEventListener('error', finishIntro);
+  videoSkip.addEventListener('click', finishIntro);
+
   function attemptJoin() {
     var val = handleInput.value.trim();
     if (!HANDLE_RE.test(val)) {
@@ -436,6 +529,11 @@
     gateHint.classList.remove('error');
     gateHint.textContent = 'connecting...';
     myHandle = val;
+
+    var seenIntro = false;
+    try { seenIntro = !!localStorage.getItem(INTRO_KEY); } catch (e) {}
+    if (!seenIntro) playIntro();
+
     connect(val);
   }
 
@@ -655,16 +753,18 @@
 
       if (entry.type === 'joined') {
         myHandle = entry.handle;
-        promptLabel.textContent = myHandle + '@relay:~$';
-        gateScreen.classList.remove('visible');
-        appEl.classList.add('visible');
-        setStatus('online');
         reconnectAttempts = 0;
-        msgInput.focus();
+        if (introActive) {
+          joinReady = true;
+        } else {
+          showApp();
+        }
         return;
       }
       if (entry.type === 'error') {
         if (!appEl.classList.contains('visible')) {
+          if (introActive) abortIntro();
+          gateScreen.classList.add('visible');
           gateHint.textContent = entry.text;
           gateHint.classList.add('error');
         } else {
